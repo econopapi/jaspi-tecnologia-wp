@@ -9,3 +9,21 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: jaspi-astra
 Template: astra
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Fjalla+One&family=Montserrat:wght@400&family=Roboto:wght@400&display=swap');
+@import url('assets/css/custom-header.css');
+
+/* Colores globales */
+:root {
+    --jaspi-primary: #e2211d;
+    --jaspi-secondary: #960018;
+    --jaspi-background-black: #000000;
+    --jaspi-background-white: #ffffff;
+    --jaspi-font-title: 'Fjalla One', sans-serif;
+    --jaspi-font-subtitle: 'Roboto', sans-serif;
+    --jaspi-font-body: 'Montserrat', sans-serif;
+}
+
+body {
+    font-family: var(--jaspi-font-body);
+}
