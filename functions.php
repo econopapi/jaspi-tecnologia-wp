@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'CHILD_THEME_JASPI_ASTRA_VERSION', '1.0.0' );
 
 require_once get_stylesheet_directory() . '/includes/header-custom.php';
+require_once get_stylesheet_directory() . '/includes/footer-custom.php';
 
 /**
  * Register theme menu locations.
@@ -27,6 +28,9 @@ function jaspi_register_menus() {
 		array(
 			'jaspi-categories-menu' => __( 'JASPI Header: Categories Menu', 'jaspi-astra' ),
 			'jaspi-quick-links-menu' => __( 'JASPI Header: Quick Links Menu', 'jaspi-astra' ),
+			'jaspi-footer-about-menu' => __( 'JASPI Footer: Sobre JASPI', 'jaspi-astra' ),
+			'jaspi-footer-branches-menu' => __( 'JASPI Footer: Asistencia', 'jaspi-astra' ),
+			'jaspi-footer-legal-menu' => __( 'JASPI Footer: Legal', 'jaspi-astra' ),
 		)
 	);
 }
@@ -61,3 +65,4 @@ function jaspi_enqueue_header_script() {
 add_action( 'wp_enqueue_scripts', 'jaspi_enqueue_header_script', 20 );
 
 add_action( 'wp_body_open', 'jaspi_render_custom_header', 5 );
+add_action( 'wp_footer', 'jaspi_render_custom_footer', 5 );
