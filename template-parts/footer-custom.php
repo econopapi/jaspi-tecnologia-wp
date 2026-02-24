@@ -59,18 +59,18 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 				?>
 			</section>
 
-			<section class="jaspi-footer-info-column" aria-label="<?php esc_attr_e( 'Pagos y envíos', 'jaspi-astra' ); ?>">
+			<section class="jaspi-footer-info-column" aria-label="<?php esc_attr_e( 'Más información', 'jaspi-astra' ); ?>">
 				<h3><?php esc_html_e( 'Pagos y envíos', 'jaspi-astra' ); ?></h3>
-				<p><?php esc_html_e( 'Pagos seguros con tus métodos favoritos', 'jaspi-astra' ); ?></p>
-				<p><?php esc_html_e( 'Envíos a todo México', 'jaspi-astra' ); ?></p>
+				<p><?php esc_html_e( 'Pagos seguros con diversos métodos de pago', 'jaspi-astra' ); ?></p>
+				<p><?php esc_html_e( 'Envíos a todo México y el extranjero.', 'jaspi-astra' ); ?></p>
 				<div class="jaspi-footer-socials-wrap">
 					<strong><?php esc_html_e( 'Síguenos en', 'jaspi-astra' ); ?></strong>
 					<div class="jaspi-footer-socials">
-						<?php jaspi_render_footer_social_link( 'facebook', '#', __( 'Facebook', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'instagram', '#', __( 'Instagram', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'x', '#', __( 'X', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'linkedin', '#', __( 'LinkedIn', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'youtube', '#', __( 'YouTube', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'facebook', 'https://www.facebook.com/jaspitec', __( 'Facebook', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'instagram', 'https://www.instagram.com/jaspi.tec', __( 'Instagram', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'x', 'https://x.com/JaspiTecnologia', __( 'X', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'linkedin', 'https://www.linkedin.com/company/jaspi-tecnolog%C3%ADa', __( 'LinkedIn', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'youtube', 'https://www.youtube.com/channel/UCdnfrAqxdlj7lsQbXEBfclg', __( 'YouTube', 'jaspi-astra' ) ); ?>
 					</div>
 				</div>
 			</section>
@@ -85,7 +85,7 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 		</div>
 
 		<div class="jaspi-footer-container jaspi-footer-bottom-row">
-			<div class="jaspi-footer-legal-links">
+			<!-- <div class="jaspi-footer-legal-links">
 				<?php
 				if ( $has_footer_legal_menu ) {
 					wp_nav_menu(
@@ -101,8 +101,8 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 					jaspi_render_fallback_list( jaspi_get_fallback_footer_legal_links(), 'jaspi-footer-legal-list' );
 				}
 				?>
-			</div>
-			<p class="jaspi-footer-copyright"><?php echo esc_html( sprintf( __( 'Copyright © %s JASPI Tecnología. Todos los derechos reservados.', 'jaspi-astra' ), gmdate( 'Y' ) ) ); ?></p>
+			</div> -->
+			<p class="jaspi-footer-copyright"><?php echo esc_html( sprintf( __( '© %s JASPI Tecnología. Todos los derechos reservados.', 'jaspi-astra' ), gmdate( 'Y' ) ) ); ?></p>
 		</div>
 	</div>
 </footer>
