@@ -45,11 +45,11 @@ function jaspi_get_fallback_quick_links() {
 			'url'   => '#',
 		),
 		array(
-			'label' => __( 'Presencia Nacional', 'jaspi-astra' ),
+			'label' => __( 'Recursos', 'jaspi-astra' ),
 			'url'   => '#',
 		),
 		array(
-			'label' => __( 'Catálogo Extendido', 'jaspi-astra' ),
+			'label' => __( 'Ser distribuidor', 'jaspi-astra' ),
 			'url'   => '#',
 		),
 		array(

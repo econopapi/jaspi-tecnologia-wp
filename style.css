@@ -28,3 +28,8 @@ Template: astra
 body {
     font-family: var(--jaspi-font-body);
 }
+
+.video-circular {
+    border-radius: 50%;
+    overflow: hidden;
+}
