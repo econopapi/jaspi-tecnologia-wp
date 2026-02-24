@@ -15,7 +15,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return bool
  */
 function jaspi_should_render_single_hero() {
-	return ! is_admin() && is_singular( array( 'post', 'page' ) );
+	if ( is_admin() || is_front_page() || is_home() ) {
+		return false;
+	}
+
+	return is_singular( array( 'post', 'page' ) );
 }
 
 /**
