@@ -59,10 +59,10 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 				?>
 			</section>
 
-			<section class="jaspi-footer-info-column" aria-label="<?php esc_attr_e( 'Pagos y envíos', 'jaspi-astra' ); ?>">
+			<section class="jaspi-footer-info-column" aria-label="<?php esc_attr_e( 'Más información', 'jaspi-astra' ); ?>">
 				<h3><?php esc_html_e( 'Pagos y envíos', 'jaspi-astra' ); ?></h3>
-				<p><?php esc_html_e( 'Pagos seguros con tus métodos favoritos', 'jaspi-astra' ); ?></p>
-				<p><?php esc_html_e( 'Envíos a todo México', 'jaspi-astra' ); ?></p>
+				<p><?php esc_html_e( 'Pagos seguros con diversos métodos de pago', 'jaspi-astra' ); ?></p>
+				<p><?php esc_html_e( 'Envíos a todo México y el extranjero.', 'jaspi-astra' ); ?></p>
 				<div class="jaspi-footer-socials-wrap">
 					<strong><?php esc_html_e( 'Síguenos en', 'jaspi-astra' ); ?></strong>
 					<div class="jaspi-footer-socials">
