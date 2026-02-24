@@ -19,6 +19,7 @@ define( 'CHILD_THEME_JASPI_ASTRA_VERSION', '1.0.0' );
 
 require_once get_stylesheet_directory() . '/includes/header-custom.php';
 require_once get_stylesheet_directory() . '/includes/footer-custom.php';
+require_once get_stylesheet_directory() . '/includes/single-hero.php';
 
 /**
  * Register theme menu locations.

@@ -66,11 +66,11 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 				<div class="jaspi-footer-socials-wrap">
 					<strong><?php esc_html_e( 'Síguenos en', 'jaspi-astra' ); ?></strong>
 					<div class="jaspi-footer-socials">
-						<?php jaspi_render_footer_social_link( 'facebook', '#', __( 'Facebook', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'instagram', '#', __( 'Instagram', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'x', '#', __( 'X', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'linkedin', '#', __( 'LinkedIn', 'jaspi-astra' ) ); ?>
-						<?php jaspi_render_footer_social_link( 'youtube', '#', __( 'YouTube', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'facebook', 'https://www.facebook.com/jaspitec', __( 'Facebook', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'instagram', 'https://www.instagram.com/jaspi.tec', __( 'Instagram', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'x', 'https://x.com/JaspiTecnologia', __( 'X', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'linkedin', 'https://www.linkedin.com/company/jaspi-tecnolog%C3%ADa', __( 'LinkedIn', 'jaspi-astra' ) ); ?>
+						<?php jaspi_render_footer_social_link( 'youtube', 'https://www.youtube.com/channel/UCdnfrAqxdlj7lsQbXEBfclg', __( 'YouTube', 'jaspi-astra' ) ); ?>
 					</div>
 				</div>
 			</section>
