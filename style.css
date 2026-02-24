@@ -29,6 +29,17 @@ body {
     font-family: var(--jaspi-font-body);
 }
 
+.contact-area {
+    background-image: url('assets/img/mapamundi_white.jpeg');
+    background-size: cover;
+    background-position: center;
+}
+
+.round-map {
+    border-radius: 10%;
+    overflow: hidden;
+}
+
 .video-circular {
     border-radius: 50%;
     overflow: hidden;

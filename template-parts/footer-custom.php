@@ -85,7 +85,7 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 		</div>
 
 		<div class="jaspi-footer-container jaspi-footer-bottom-row">
-			<div class="jaspi-footer-legal-links">
+			<!-- <div class="jaspi-footer-legal-links">
 				<?php
 				if ( $has_footer_legal_menu ) {
 					wp_nav_menu(
@@ -101,8 +101,8 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 					jaspi_render_fallback_list( jaspi_get_fallback_footer_legal_links(), 'jaspi-footer-legal-list' );
 				}
 				?>
-			</div>
-			<p class="jaspi-footer-copyright"><?php echo esc_html( sprintf( __( 'Copyright © %s JASPI Tecnología. Todos los derechos reservados.', 'jaspi-astra' ), gmdate( 'Y' ) ) ); ?></p>
+			</div> -->
+			<p class="jaspi-footer-copyright"><?php echo esc_html( sprintf( __( '© %s JASPI Tecnología. Todos los derechos reservados.', 'jaspi-astra' ), gmdate( 'Y' ) ) ); ?></p>
 		</div>
 	</div>
 </footer>
