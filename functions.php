@@ -68,6 +68,40 @@ add_action( 'wp_enqueue_scripts', 'jaspi_enqueue_header_script', 20 );
 add_action( 'wp_body_open', 'jaspi_render_custom_header', 5 );
 add_action( 'wp_footer', 'jaspi_render_custom_footer', 5 );
 
+/**
+ * Eliminar imágenes asociadas al producto al borrar un producto
+ */
+add_action('before_delete_post', 'jaspi_delete_product_images', 10, 1);
+function jaspi_delete_product_images($post_id) {
+
+    // Solo productos
+    if (get_post_type($post_id) !== 'product') {
+        return;
+    }
+
+    // Evitar ejecuciones duplicadas
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+
+    // Imagen destacada
+    $thumbnail_id = get_post_thumbnail_id($post_id);
+    if ($thumbnail_id) {
+        wp_delete_attachment($thumbnail_id, true);
+    }
+
+    // Galería del producto
+    $gallery_ids = get_post_meta($post_id, '_product_image_gallery', true);
+
+    if (!empty($gallery_ids)) {
+        $gallery_ids = explode(',', $gallery_ids);
+
+        foreach ($gallery_ids as $image_id) {
+            wp_delete_attachment((int) $image_id, true);
+        }
+    }
+}
+
 
 /**
  * JASPI CUSTOM FEATURED PRODUCTS BLOCK
@@ -519,4 +553,170 @@ function jaspi_render_product_categories_block($attributes) {
 
 /**
  * END JASPI CUSTOM PRODUCT CATEGORY BLOCK
+ */
+
+
+/**
+ * JASPI CUSTOM FEATURED BRANDS BLOCK
+ * Implementación de bloque personalizado para mostrar marcas destacadas
+ * en el editor de bloques de WordPress.
+ */
+
+
+/**
+ * Register JASPI Featured Brands Block
+ */
+function jaspi_register_featured_brands_block() {
+	// register block script
+	wp_register_script(
+		'jaspi-featured-brands-block',
+		get_stylesheet_directory_uri() . '/blocks/featured-brands/block.js',
+		array('wp-blocks', 'wp-element', 'wp-components', 'wp-data'),
+		CHILD_THEME_JASPI_ASTRA_VERSION
+	);
+
+	// register block styles
+	wp_register_style(
+		'jaspi-featured-brands-block-editor',
+		get_stylesheet_directory_uri() . '/blocks/featured-brands/editor.css',
+		array('wp-edit-blocks'),
+		CHILD_THEME_JASPI_ASTRA_VERSION
+	);
+
+	wp_register_style(
+		'jaspi-featured-brands-block',
+		get_stylesheet_directory_uri() . '/blocks/featured-brands/style.css',
+		array(),
+		CHILD_THEME_JASPI_ASTRA_VERSION
+	);
+
+	// register carousel script
+	wp_register_script(
+		'jaspi-brands-carousel',
+		get_stylesheet_directory_uri() . '/blocks/featured-brands/carousel.js',
+		array('jquery'),
+		CHILD_THEME_JASPI_ASTRA_VERSION,
+		true
+	);
+
+	// register the block
+	register_block_type(
+		'jaspi/featured-brands',
+		array(
+			'editor_script' => 'jaspi-featured-brands-block',
+			'editor_style' => 'jaspi-featured-brands-block-editor',
+			'style' => 'jaspi-featured-brands-block',
+			'render_callback' => 'jaspi_render_featured_brands_block',
+			'attributes' => array(
+				'selectedBrands' => array(
+					'type' => 'array',
+					'default' => array(),
+				),
+				'title' => array(
+					'type' => 'string',
+					'default' => 'Marcas Destacadas',
+				),
+				'autoplaySpeed' => array(
+					'type' => 'number',
+					'default' => 3000, // en milisegundos
+				),
+			),
+		)
+	);
+}
+add_action('init', 'jaspi_register_featured_brands_block');
+
+
+/**
+ * Render JASPI Featured Brands Block
+ */
+function jaspi_render_featured_brands_block($attributes) {
+	$selected_brands = isset($attributes['selectedBrands']) ? $attributes['selectedBrands']:array();
+	$title = isset($attributes['title'])? $attributes['title']: 'Marcas Destacadas';
+	$display_mode = isset($attributes['displayMode'])? $attributes['displayMode']: 'carousel';
+	$autoplay_speed = isset($attributes['autoplaySpeed'])? $attributes['autoplaySpeed']: 3000;
+
+	if(empty($selected_brands)) {
+		return '';
+	}
+
+	// enqueue carousel script only for carousel mode
+	if($display_mode === 'carousel') {
+		wp_enqueue_script('jaspi-brands-carousel');
+	}
+
+	ob_start();
+	?>
+
+	<div class="jaspi-featured-brands <?php echo esc_attr('mode-' . $display_mode); ?>" <?php if($display_mode === 'carousel'): ?>data-autoplay-speed="<?php echo esc_attr($autoplay_speed); ?>"<?php endif; ?>>
+		<?php if (!empty($title)): ?>
+			<h2 class="brands-title"><?php echo esc_html($title); ?></h2>
+		<?php endif; ?>
+		
+		<?php if($display_mode === 'carousel'): ?>
+			<div class="brands-carousel-wrapper">
+				<button class="carousel-nav carousel-prev" aria-label="Anterior">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>		
+				</button>
+				<div class="brands-carousel-container">
+					<div class="brands-carousel">
+						<?php foreach ($selected_brands as $brand_id):
+							$brand = get_term($brand_id, 'product_brand');
+							if(!$brand || is_wp_error($brand)) {
+								continue;
+							}
+							$thumbnail_id = get_term_meta($brand_id, 'thumbnail_id', true);
+							$image_url = $thumbnail_id? wp_get_attachment_url($thumbnail_id) : '';
+							$brand_link = get_term_link($brand);
+						?>
+						<div class="brand-item">
+							<a href="<?php echo esc_url($brand_link); ?>" class="brand-link">
+								<?php if($image_url): ?>
+									<img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($brand->name); ?>" class="brand-logo">
+								<?php else: ?>
+									<span class="brand-name-text"><?php echo esc_html($brand->name); ?></span>
+								<?php endif; ?>
+							</a>
+						</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+				<button class="carousel-nav carousel-next" aria-label="Siguiente">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>				
+				</button>
+			</div>
+		<?php else: ?>
+			<div class="brands-grid">
+				<?php foreach ($selected_brands as $brand_id):
+					$brand = get_term($brand_id, 'product_brand');
+					if(!$brand || is_wp_error($brand)) {
+						continue;
+					}
+					$thumbnail_id = get_term_meta($brand_id, 'thumbnail_id', true);
+					$image_url = $thumbnail_id? wp_get_attachment_url($thumbnail_id) : '';
+					$brand_link = get_term_link($brand);
+				?>
+				<div class="brand-item">
+					<a href="<?php echo esc_url($brand_link); ?>" class="brand-link">
+						<?php if($image_url): ?>
+							<img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($brand->name); ?>" class="brand-logo">
+						<?php else: ?>
+							<span class="brand-name-text"><?php echo esc_html($brand->name); ?></span>
+						<?php endif; ?>
+					</a>
+				</div>
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+
+/**
+ * END JASPI CUSTOM FEATURED BRANDS BLOCK
  */
