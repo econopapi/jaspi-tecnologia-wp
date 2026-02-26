@@ -25,6 +25,10 @@ Template: astra
     --jaspi-font-body: 'Montserrat', sans-serif;
 }
 
+a {
+    text-decoration: none!important;
+}
+
 body {
     font-family: var(--jaspi-font-body);
 }
@@ -108,6 +112,11 @@ body {
 @media (min-width: 1200px) {
   .ast-plain-container.ast-no-sidebar #primary {
     margin-top: 0px!important;
+    margin-bottom: 20px!important;
+  }
+
+  .ast-woocommerce-container {
+    margin-top: 25px!important;
     margin-bottom: 20px!important;
   }
 }
