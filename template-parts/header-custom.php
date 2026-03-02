@@ -7,15 +7,17 @@
 
 $has_categories_menu = ! empty( $args['has_categories_menu'] );
 $has_quick_links     = ! empty( $args['has_quick_links'] );
+// Etiquetas dinámicas según estado de sesión
+$account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) : __( 'Iniciar sesión', 'jaspi-astra' );
+$account_label_topbar = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) : __( 'Iniciar sesión / Registrarse', 'jaspi-astra' );
 ?>
 <header class="jaspi-header" role="banner">
 	<div class="jaspi-header-topbar">
 		<div class="jaspi-header-container">
 			<p class="jaspi-header-topbar-left"><?php esc_html_e( '¡Bienvenido a JASPI Tecnología!', 'jaspi-astra' ); ?></p>
 			<div class="jaspi-header-topbar-right">
-				<span><?php esc_html_e( 'T.C.: $17.35', 'jaspi-astra' ); ?></span>
-				<a href="#"><?php esc_html_e( 'Contáctenos', 'jaspi-astra' ); ?></a>
-				<a href="#"><?php esc_html_e( 'Iniciar sesión / Registrarse', 'jaspi-astra' ); ?></a>
+				<a href="/contacto"><?php esc_html_e( 'Contáctenos', 'jaspi-astra' ); ?></a>
+				<a href="/mi-cuenta"><?php echo esc_html( $account_label_topbar ); ?></a>
 			</div>
 		</div>
 	</div>
@@ -30,11 +32,11 @@ $has_quick_links     = ! empty( $args['has_quick_links'] );
 				<input id="jaspi-header-search-input" type="search" name="s" placeholder="<?php esc_attr_e( 'Buscar ...', 'jaspi-astra' ); ?>" />
 				<button type="submit" aria-label="<?php esc_attr_e( 'Buscar', 'jaspi-astra' ); ?>">🔍</button>
 			</form>
-			<div class="jaspi-header-actions" aria-label="<?php esc_attr_e( 'Accesos rápidos', 'jaspi-astra' ); ?>">
-				<?php jaspi_render_action_link( '#', __( 'Favoritos', 'jaspi-astra' ), 'favorites', 'jaspi-action-link' ); ?>
-				<?php jaspi_render_action_link( '#', __( 'Comparar', 'jaspi-astra' ), 'compare', 'jaspi-action-link' ); ?>
-				<?php jaspi_render_action_link( '#', __( 'Carrito', 'jaspi-astra' ), 'cart', 'jaspi-action-link' ); ?>
-				<?php jaspi_render_action_link( '#', __( 'Iniciar sesión', 'jaspi-astra' ), 'account', 'jaspi-action-link' ); ?>
+				<div class="jaspi-header-actions" aria-label="<?php esc_attr_e( 'Accesos rápidos', 'jaspi-astra' ); ?>">
+				<?php jaspi_render_action_link( '/favoritos', __( 'Favoritos', 'jaspi-astra' ), 'favorites', 'jaspi-action-link' ); ?>
+				<?php jaspi_render_action_link( '/comparar', __( 'Comparar', 'jaspi-astra' ), 'compare', 'jaspi-action-link' ); ?>
+				<?php jaspi_render_action_link( '/carrito', __( 'Carrito', 'jaspi-astra' ), 'cart', 'jaspi-action-link' ); ?>
+				<?php jaspi_render_action_link( '/mi-cuenta', $account_label_action, 'account', 'jaspi-action-link' ); ?>
 			</div>
 		</div>
 
@@ -90,8 +92,8 @@ $has_quick_links     = ! empty( $args['has_quick_links'] );
 			<button type="button" class="jaspi-mobile-menu-toggle" aria-expanded="false" aria-controls="jaspi-mobile-panel" aria-label="<?php esc_attr_e( 'Abrir menú', 'jaspi-astra' ); ?>">☰</button>
 			<div class="jaspi-mobile-logo"><?php jaspi_render_logo(); ?></div>
 			<div class="jaspi-mobile-actions">
-				<?php jaspi_render_action_link( '#', __( 'Iniciar sesión', 'jaspi-astra' ), 'account', 'jaspi-action-link jaspi-action-link-mobile' ); ?>
-				<?php jaspi_render_action_link( '#', __( 'Carrito', 'jaspi-astra' ), 'cart', 'jaspi-action-link jaspi-action-link-mobile' ); ?>
+				<?php jaspi_render_action_link( '/mi-cuenta', $account_label_action, 'account', 'jaspi-action-link jaspi-action-link-mobile' ); ?>
+				<?php jaspi_render_action_link( '/carrito', __( 'Carrito', 'jaspi-astra' ), 'cart', 'jaspi-action-link jaspi-action-link-mobile' ); ?>
 			</div>
 		</div>
 

@@ -1,0 +1,108 @@
+.jaspi-fav-btn{background:transparent;border:0;cursor:pointer;color:#444;padding:6px 8px;font-size:16px;display:inline-flex;align-items:center}
+.jaspi-fav-btn .jaspi-fav-heart{font-size:18px;color:#fff;display:inline-block;transition:transform .18s ease,color .18s ease}
+.jaspi-fav-btn:active .jaspi-fav-heart{transform:scale(.92)}
+.jaspi-fav-btn.is-fav .jaspi-fav-heart{color:var(--jaspi-primary,#e23b6b);transform:scale(1.12)}
+
+/* Unified small action button for favorite and compare */
+.jaspi-action-btn{background:#fff;border:1px solid #eee;border-radius:20px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;margin:4px;box-sizing:border-box}
+.jaspi-action-btn .jaspi-fav-heart,.jaspi-action-btn .jaspi-compare-icon{font-size:16px;color:#fff;display:inline-block;line-height:1}
+.jaspi-action-btn.is-active{background:var(--jaspi-primary,#e23b6b);border-color:var(--jaspi-primary,#e23b6b)}
+.jaspi-action-btn.is-active .jaspi-fav-heart,.jaspi-action-btn.is-active .jaspi-compare-icon{color:#fff}
+
+/* Force override for aggressive theme button rules */
+button.jaspi-action-btn, .jaspi-action-btn{display:inline-flex !important; width:36px !important; height:36px !important; padding:0 !important; border-radius:20px !important; background:#fff !important; border:1px solid #eee !important; font-size:14px !important}
+button.jaspi-action-btn .jaspi-fav-heart, button.jaspi-action-btn .jaspi-compare-icon{font-size:16px !important}
+.jaspi-action-count{display:inline-flex;margin-left:6px;background:var(--jaspi-primary,#0a66d1);color:#fff;border-radius:12px;min-width:20px;height:20px;align-items:center;justify-content:center;padding:0 6px;font-size:12px;line-height:1;vertical-align:middle}
+.jaspi-favorites-table{width:100%;border-collapse:collapse}
+.jaspi-favorites-table th,.jaspi-favorites-table td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+.jaspi-remove-fav{background:transparent;border:0;color:#666;cursor:pointer;margin-right:8px}
+
+/* Toast notification */
+.jaspi-fav-toast{position:fixed;right:20px;bottom:20px;background:#222;color:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:all .25s ease;z-index:99999;font-size:14px}
+.jaspi-fav-toast.visible{opacity:1;transform:translateY(0)}
+.jaspi-fav-toast .jaspi-fav-toast-link{color:var(--jaspi-primary,#e23b6b);margin-left:6px;text-decoration:underline;font-weight:600}
+
+/* Loading spinner inside button */
+.jaspi-fav-btn.is-loading{opacity:.9}
+.jaspi-fav-btn.is-loading .jaspi-fav-heart{opacity:.4}
+.jaspi-fav-btn.is-loading:after{content:"";display:inline-block;width:14px;height:14px;margin-left:8px;border-radius:50%;border:2px solid rgba(255,255,255,.6);border-top-color:transparent;animation:jaspi-spin .8s linear infinite}
+@keyframes jaspi-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Full theme buttons that we augment slightly */
+.button.jaspi-action-button{display:inline-flex;align-items:center;gap:8px}
+.button.jaspi-action-button .jaspi-action-label-text{display:inline-block}
+
+/* Ensure small icon action buttons are not affected by generic .button rules */
+
+/* Small variant for loop buttons that keeps theme styling but is compact */
+.jaspi-action-small{display:inline-flex !important;align-items:center !important;justify-content:center !important;min-width:56px !important;padding:6px 12px !important;height:auto !important;border-radius:999px !important;font-size:14px !important}
+.jaspi-action-small .jaspi-fav-heart,.jaspi-action-small .jaspi-compare-icon{font-size:16px !important;color:inherit}
+
+/* Backwards compatibility for icon-only class */
+.jaspi-action-btn{min-width:0;padding:0;border-radius:20px}
+
+/* Wrapper to keep loop actions inline */
+.jaspi-actions-wrapper{display:flex;gap:12px;align-items:center;margin-top:10px;box-sizing:border-box;width:100%;justify-content:center;padding:8px 0}
+.jaspi-actions-wrapper .button{display:inline-flex !important;align-items:center !important;justify-content:center !important}
+/* Make the two action buttons share the available width below the add-to-cart */
+.jaspi-actions-wrapper .jaspi-action-small{flex:1 1 0;max-width:48%;min-width:120px;padding:10px 14px !important}
+
+/* Make the actions row occupy same inner width as the product content (accounting for 20px padding each side) */
+.jaspi-actions-wrapper{max-width:100%;width:100%;padding:0 20px;box-sizing:border-box}
+/* If parent theme forces buttons to full width, prefer our flex sizing */
+.jaspi-actions-wrapper .button.jaspi-action-small{width:100% !important}
+
+/* Center and expand the add-to-cart button in featured/product loop */
+.featured-add-to-cart{display:flex;justify-content:center;width:100%;box-sizing:border-box;margin-top:14px}
+.featured-add-to-cart .button{display:inline-flex !important;align-items:center;justify-content:center !important;width:100% !important;max-width:none !important;margin:0 auto;padding:14px 20px;box-sizing:border-box}
+
+/* DEBUG helpers (remove after verification) */
+.featured-product-content{outline: none}
+.featured-product-content.debug{outline:2px dashed rgba(255,0,102,0.25)}
+.featured-product-content .featured-add-to-cart.debug, .featured-product-content .jaspi-actions-wrapper.debug{outline:2px dashed rgba(0,128,255,0.12)}
+
+/* Strong override: ensure the add-to-cart area is centered within the product card */
+.featured-product-item .featured-product-content > .featured-add-to-cart{display:flex !important;justify-content:center !important;align-items:center !important;width:100% !important;padding:0 20px !important;margin:12px 0 0 0 !important;box-sizing:border-box}
+.featured-product-item .featured-product-content > .featured-add-to-cart .button{width:100% !important;max-width:100% !important;margin:0 !important;display:inline-flex !important;justify-content:center !important}
+
+/* Ensure actions wrapper's internal buttons align exactly with add-to-cart inner edges */
+.featured-product-content .jaspi-actions-wrapper{display:flex;gap:12px;align-items:center;justify-content:center;padding:0 20px;box-sizing:border-box}
+.featured-product-content .jaspi-actions-wrapper .jaspi-action-small{flex:1 1 0;max-width:none;min-width:0;padding:8px 12px !important}
+.featured-product-content .jaspi-actions-wrapper .button.jaspi-action-small{width:100% !important}
+
+/* Backup: if theme applies margins to the button, reset them here */
+.featured-product-item .featured-product-content .button{margin:0 !important}
+
+/* Ensure SVG icons inside buttons follow currentColor */
+.jaspi-actions-wrapper .jaspi-compare-icon svg, .jaspi-actions-wrapper .jaspi-fav-heart{fill:currentColor; color:inherit}
+.jaspi-compare-icon{display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+.jaspi-compare-icon svg{width:18px;height:18px}
+
+/* Align with Astra shop markup: ensure summary add-to-cart and the actions wrapper share the same inner width */
+.astra-shop-summary-wrap{box-sizing:border-box;padding:0 20px}
+.astra-shop-summary-wrap .add_to_cart_button{display:inline-flex !important;align-items:center;justify-content:center !important;width:100% !important;padding:14px 20px !important;box-sizing:border-box;margin:0 0 8px 0 !important}
+
+/* target the wrapper that follows the summary to match widths exactly */
+.astra-shop-summary-wrap + .jaspi-actions-wrapper{width:100%;box-sizing:border-box;padding:0 20px;display:flex;gap:12px;justify-content:space-between;align-items:center}
+.astra-shop-summary-wrap + .jaspi-actions-wrapper .jaspi-action-small{flex:1 1 0;max-width:none;min-width:0;padding:8px 12px !important}
+.astra-shop-summary-wrap + .jaspi-actions-wrapper .button.jaspi-action-small{width:48% !important}
+
+/* Mobile: prevent "Añadir al carrito" from wrapping in the product loop */
+@media (max-width: 480px) {
+	.featured-add-to-cart .button,
+	.featured-product-item .featured-product-content > .featured-add-to-cart .button,
+	.astra-shop-summary-wrap .add_to_cart_button {
+		font-size: 13px !important;
+		padding: 10px 14px !important;
+		white-space: nowrap !important;
+		line-height: 1.1 !important;
+	}
+
+	/* slightly reduce action buttons so layout stays compact */
+	.jaspi-actions-wrapper .jaspi-action-small,
+	.astra-shop-summary-wrap + .jaspi-actions-wrapper .jaspi-action-small {
+		padding: 6px 10px !important;
+		font-size: 13px !important;
+		min-width: 44px !important;
+	}
+}
