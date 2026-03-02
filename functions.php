@@ -699,6 +699,199 @@ function jaspi_enqueue_favorites_assets() {
 add_action( 'wp_enqueue_scripts', 'jaspi_enqueue_favorites_assets', 25 );
 
 /**
+ * Compare feature: enqueue scripts and styles
+ */
+function jaspi_enqueue_compare_assets() {
+	wp_enqueue_script(
+		'jaspi-compare-js',
+		get_stylesheet_directory_uri() . '/assets/js/compare.js',
+		array('jquery'),
+		CHILD_THEME_JASPI_ASTRA_VERSION,
+		true
+	);
+
+	wp_localize_script('jaspi-compare-js', 'jaspi_compare', array(
+		'ajax_url' => admin_url('admin-ajax.php'),
+		'nonce'    => wp_create_nonce('jaspi_compare_nonce'),
+		'count'    => function_exists('jaspi_get_compare_count') ? jaspi_get_compare_count() : 0,
+		'compare'  => function_exists('jaspi_get_user_compare') ? jaspi_get_user_compare() : array(),
+		'compare_page' => esc_url( home_url( '/comparar' ) ),
+		'limit'    => 4,
+	));
+
+	wp_enqueue_style(
+		'jaspi-compare-css',
+		get_stylesheet_directory_uri() . '/assets/css/compare.css',
+		array(),
+		CHILD_THEME_JASPI_ASTRA_VERSION
+	);
+}
+add_action( 'wp_enqueue_scripts', 'jaspi_enqueue_compare_assets', 26 );
+
+/**
+ * Compare storage helpers (usermeta + cookie)
+ */
+function jaspi_get_compare_from_cookie() {
+	if ( empty( $_COOKIE['jaspi_compare'] ) ) {
+		return array();
+	}
+	$data = json_decode( wp_unslash( $_COOKIE['jaspi_compare'] ), true );
+	if ( ! is_array( $data ) ) {
+		return array();
+	}
+	return array_map( 'intval', $data );
+}
+
+function jaspi_get_user_compare() {
+	if ( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+		$meta = get_user_meta( $user_id, 'jaspi_compare', true );
+		if ( ! is_array( $meta ) ) {
+			$meta = array();
+		}
+		return array_map( 'intval', $meta );
+	}
+	return jaspi_get_compare_from_cookie();
+}
+
+function jaspi_set_user_compare( $compare ) {
+	if ( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+		update_user_meta( $user_id, 'jaspi_compare', array_map( 'intval', $compare ) );
+	}
+}
+
+function jaspi_get_compare_count() {
+	$c = jaspi_get_user_compare();
+	return is_array( $c ) ? count( $c ) : 0;
+}
+
+/**
+ * AJAX toggle compare
+ */
+function jaspi_toggle_compare_ajax() {
+	check_ajax_referer( 'jaspi_compare_nonce', 'nonce' );
+
+	$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+	if ( ! $product_id ) {
+		wp_send_json_error( array( 'message' => 'Producto inválido' ), 400 );
+	}
+
+	$compare = jaspi_get_user_compare();
+	$limit = 4;
+	if ( in_array( $product_id, $compare, true ) ) {
+		$compare = array_values( array_diff( $compare, array( $product_id ) ) );
+		$action = 'removed';
+	} else {
+		if ( count( $compare ) >= $limit ) {
+			wp_send_json_error( array( 'message' => 'Límite alcanzado', 'limit' => $limit ), 400 );
+		}
+		$compare[] = $product_id;
+		$compare = array_values( array_unique( $compare ) );
+		$action = 'added';
+	}
+
+	if ( is_user_logged_in() ) {
+		jaspi_set_user_compare( $compare );
+	}
+
+	wp_send_json_success( array( 'compare' => $compare, 'count' => count( $compare ), 'action' => $action ) );
+}
+add_action( 'wp_ajax_jaspi_toggle_compare', 'jaspi_toggle_compare_ajax' );
+add_action( 'wp_ajax_nopriv_jaspi_toggle_compare', 'jaspi_toggle_compare_ajax' );
+
+function jaspi_clear_compare_ajax() {
+	check_ajax_referer( 'jaspi_compare_nonce', 'nonce' );
+	if ( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+		update_user_meta( $user_id, 'jaspi_compare', array() );
+	}
+	setcookie( 'jaspi_compare', '', time() - HOUR_IN_SECONDS, '/' );
+	if ( isset( $_COOKIE['jaspi_compare'] ) ) {
+		unset( $_COOKIE['jaspi_compare'] );
+	}
+	wp_send_json_success( array( 'compare' => array(), 'count' => 0 ) );
+}
+add_action( 'wp_ajax_jaspi_clear_compare', 'jaspi_clear_compare_ajax' );
+add_action( 'wp_ajax_nopriv_jaspi_clear_compare', 'jaspi_clear_compare_ajax' );
+
+/**
+ * Shortcode to render compare table
+ */
+function jaspi_compare_shortcode( $atts ) {
+	$compare = jaspi_get_user_compare();
+	if ( empty( $compare ) ) {
+		return '<p>' . esc_html__( 'No hay productos para comparar.', 'jaspi-astra' ) . '</p>';
+	}
+
+	// Limit to first 4
+	$compare = array_slice( $compare, 0, 4 );
+
+	ob_start();
+	?>
+	<div class="jaspi-compare-list">
+		<div class="jaspi-compare-actions" style="margin-bottom:12px;">
+			<button type="button" class="button jaspi-clear-compare"><?php esc_html_e( 'Vaciar comparación', 'jaspi-astra' ); ?></button>
+		</div>
+		<div class="jaspi-compare-grid">
+			<table class="jaspi-compare-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Campo', 'jaspi-astra' ); ?></th>
+						<?php foreach ( $compare as $prod_id ): $prod = wc_get_product( $prod_id ); if ( ! $prod ) continue; ?>
+							<th><?php echo esc_html( $prod->get_name() ); ?> <br> <button class="jaspi-remove-compare button" data-product-id="<?php echo esc_attr( $prod_id ); ?>">✕</button></th>
+						<?php endforeach; ?>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><?php esc_html_e( 'Imagen', 'jaspi-astra' ); ?></td>
+						<?php foreach ( $compare as $prod_id ): $prod = wc_get_product( $prod_id ); if ( ! $prod ) continue; ?>
+							<td><?php echo wp_kses_post( $prod->get_image() ); ?></td>
+						<?php endforeach; ?>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Precio', 'jaspi-astra' ); ?></td>
+						<?php foreach ( $compare as $prod_id ): $prod = wc_get_product( $prod_id ); if ( ! $prod ) continue; ?>
+							<td><?php echo wp_kses_post( $prod->get_price_html() ); ?></td>
+						<?php endforeach; ?>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Disponibilidad', 'jaspi-astra' ); ?></td>
+						<?php foreach ( $compare as $prod_id ): $prod = wc_get_product( $prod_id ); if ( ! $prod ) continue; ?>
+							<td><?php echo $prod->is_in_stock() ? esc_html__( 'En stock', 'jaspi-astra' ) : esc_html__( 'Agotado', 'jaspi-astra' ); ?></td>
+						<?php endforeach; ?>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'SKU', 'jaspi-astra' ); ?></td>
+						<?php foreach ( $compare as $prod_id ): $prod = wc_get_product( $prod_id ); if ( ! $prod ) continue; ?>
+							<td><?php echo esc_html( $prod->get_sku() ); ?></td>
+						<?php endforeach; ?>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Categoría', 'jaspi-astra' ); ?></td>
+						<?php foreach ( $compare as $prod_id ): $terms = get_the_terms( $prod_id, 'product_cat' ); $cat = ( $terms && ! is_wp_error( $terms ) ) ? esc_html( $terms[0]->name ) : ''; ?>
+							<td><?php echo $cat; ?></td>
+						<?php endforeach; ?>
+					</tr>
+				</tbody>
+							<tfoot>
+								<tr>
+									<td><?php esc_html_e( 'Acciones', 'jaspi-astra' ); ?></td>
+									<?php foreach ( $compare as $prod_id ): $prod = wc_get_product( $prod_id ); if ( ! $prod ) continue; ?>
+										<td><a class="button jaspi-compare-show" href="<?php echo esc_url( get_permalink( $prod_id ) ); ?>"><?php esc_html_e( 'Mostrar', 'jaspi-astra' ); ?></a></td>
+									<?php endforeach; ?>
+								</tr>
+							</tfoot>
+					</table>
+		</div>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'jaspi_compare', 'jaspi_compare_shortcode' );
+
+/**
  * Merge favorites from cookie into usermeta when a user logs in.
  * This keeps guest favorites when the user authenticates.
  */
@@ -800,20 +993,69 @@ function jaspi_render_fav_button( $position = '' ) {
 	$favorites = jaspi_get_user_favorites();
 	$is_fav = in_array( $product_id, $favorites, true );
 
+	// Render differently for single product (full theme button + label)
+	if ( is_product() ) {
+		$icon = '<span class="jaspi-fav-heart" aria-hidden="true">♥</span>';
+		$btn_class = 'button jaspi-action-button jaspi-fav-btn' . ( $is_fav ? ' is-fav is-active' : '' );
+		$label = $is_fav ? esc_html__( 'En favoritos', 'jaspi-astra' ) : esc_html__( 'Favoritos', 'jaspi-astra' );
+		echo '<button type="button" class="' . esc_attr( $btn_class ) . '" data-product-id="' . esc_attr( $product_id ) . '" aria-pressed="' . ( $is_fav ? 'true' : 'false' ) . '">' . $icon . ' <span class="jaspi-action-label-text">' . esc_html( $label ) . '</span></button>';
+		return;
+	}
+
+	// For product loop: small theme-styled button (inline) so it sits side-by-side with other actions
 	$icon = '<span class="jaspi-fav-heart" aria-hidden="true">♥</span>';
-	$btn_class = 'jaspi-fav-btn' . ( $is_fav ? ' is-fav' : '' );
-	printf(
-		'<button type="button" class="%1$s" data-product-id="%2$d" aria-pressed="%4$s">%3$s <span class="screen-reader-text">%5$s</span></button>',
-		esc_attr( $btn_class ),
-		esc_attr( $product_id ),
-		$icon,
-		$is_fav ? 'true' : 'false',
-		$is_fav ? esc_html__( 'Eliminar de favoritos', 'jaspi-astra' ) : esc_html__( 'Añadir a favoritos', 'jaspi-astra' )
-	);
+	$btn_class = 'button jaspi-action-button jaspi-action-small jaspi-fav-btn' . ( $is_fav ? ' is-fav is-active' : '' );
+	echo '<button type="button" class="' . esc_attr( $btn_class ) . '" data-product-id="' . esc_attr( $product_id ) . '" aria-pressed="' . ( $is_fav ? 'true' : 'false' ) . '">' . $icon . '</button>';
 }
 
-add_action( 'woocommerce_after_shop_loop_item', 'jaspi_render_fav_button', 20 );
-add_action( 'woocommerce_single_product_summary', 'jaspi_render_fav_button', 35 );
+add_action( 'woocommerce_after_shop_loop_item', 'jaspi_render_fav_button', 12 );
+add_action( 'woocommerce_single_product_summary', 'jaspi_render_fav_button', 31 );
+
+/**
+ * Render compare button on product loop and single product
+ */
+function jaspi_render_compare_button( $position = '' ) {
+	global $product;
+	if ( ! $product ) {
+		return;
+	}
+	$product_id = $product->get_id();
+	$compare = function_exists( 'jaspi_get_user_compare' ) ? jaspi_get_user_compare() : array();
+	$is_compare = in_array( $product_id, $compare, true );
+
+	$icon_markup = function_exists( 'jaspi_get_flat_icon' ) ? jaspi_get_flat_icon( 'compare' ) : '';
+	// Provide a visible fallback if no SVG helper exists
+	if ( empty( $icon_markup ) ) {
+		$icon_markup = '⇄';
+	}
+	$icon = '<span class="jaspi-compare-icon" aria-hidden="true">' . $icon_markup . '</span>';
+
+	// Single product: render full theme-styled button with label
+	if ( is_product() ) {
+		$btn_class = 'button jaspi-action-button jaspi-compare-btn' . ( $is_compare ? ' is-compare is-active' : '' );
+		echo '<button type="button" class="' . esc_attr( $btn_class ) . '" data-product-id="' . esc_attr( $product_id ) . '" aria-pressed="' . ( $is_compare ? 'true' : 'false' ) . '">' . $icon . ' <span class="jaspi-action-label-text">' . ( $is_compare ? esc_html__( 'Eliminar de comparación', 'jaspi-astra' ) : esc_html__( 'Comparar', 'jaspi-astra' ) ) . '</span></button>';
+		return;
+	}
+
+	// Product loop: small icon-only action button
+	$btn_class = 'button jaspi-action-button jaspi-action-small jaspi-compare-btn' . ( $is_compare ? ' is-compare is-active' : '' );
+	echo '<button type="button" class="' . esc_attr( $btn_class ) . '" data-product-id="' . esc_attr( $product_id ) . '" aria-pressed="' . ( $is_compare ? 'true' : 'false' ) . '">' . $icon . '</button>';
+}
+
+add_action( 'woocommerce_after_shop_loop_item', 'jaspi_render_compare_button', 13 );
+add_action( 'woocommerce_single_product_summary', 'jaspi_render_compare_button', 36 );
+
+/**
+ * Wrapper start/end for inline action buttons in loop
+ */
+function jaspi_actions_wrapper_start() {
+	echo '<div class="jaspi-actions-wrapper">';
+}
+function jaspi_actions_wrapper_end() {
+	echo '</div>';
+}
+add_action( 'woocommerce_after_shop_loop_item', 'jaspi_actions_wrapper_start', 11 );
+add_action( 'woocommerce_after_shop_loop_item', 'jaspi_actions_wrapper_end', 14 );
 
 function jaspi_favorites_shortcode( $atts ) {
 	$favorites = jaspi_get_user_favorites();

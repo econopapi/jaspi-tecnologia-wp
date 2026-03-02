@@ -129,6 +129,17 @@ function jaspi_render_action_link( $href, $label, $icon, $class_name = '' ) {
 		}
 	}
 
+	// If this is the compare action, print a counter bubble that can be updated by JS
+	if ( 'compare' === $icon ) {
+		$count = function_exists( 'jaspi_get_compare_count' ) ? jaspi_get_compare_count() : 0;
+		if ( $count > 0 ) {
+			echo '<span class="jaspi-action-count" id="jaspi-compare-count">' . esc_html( $count ) . '</span>';
+		} else {
+			// render hidden placeholder so JS can reveal when >0
+			echo '<span class="jaspi-action-count" id="jaspi-compare-count" style="display:none"></span>';
+		}
+	}
+
 	echo '<span class="jaspi-action-label">' . esc_html( $label ) . '</span>';
 	echo '</a>';
 }
