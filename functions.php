@@ -1195,3 +1195,386 @@ function jaspi_render_featured_brands_block($attributes) {
 /**
  * END JASPI CUSTOM FEATURED BRANDS BLOCK
  */
+
+/**
+ * Footer newsletter: admin settings, AJAX handler and frontend script
+ */
+
+function jaspi_footer_newsletter_admin_menu() {
+	add_theme_page(
+		__( 'Footer Newsletter', 'jaspi-astra' ),
+		__( 'Footer Newsletter', 'jaspi-astra' ),
+		'manage_options',
+		'jaspi-footer-newsletter',
+		'jaspi_footer_newsletter_page'
+	);
+}
+add_action( 'admin_menu', 'jaspi_footer_newsletter_admin_menu' );
+
+function jaspi_footer_newsletter_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	if ( isset( $_POST['jaspi_footer_newsletter_submit'] ) ) {
+		check_admin_referer( 'jaspi_footer_newsletter_save', 'jaspi_footer_newsletter_nonce' );
+
+		$form_id = isset( $_POST['jaspi_footer_forminator_form_id'] ) ? absint( $_POST['jaspi_footer_forminator_form_id'] ) : 0;
+		$field_name = isset( $_POST['jaspi_footer_forminator_field_name'] ) ? sanitize_text_field( wp_unslash( $_POST['jaspi_footer_forminator_field_name'] ) ) : '';
+
+		update_option( 'jaspi_footer_forminator_form_id', $form_id );
+		update_option( 'jaspi_footer_forminator_field_name', $field_name );
+
+		echo '<div class="updated"><p>' . esc_html__( 'Ajustes guardados.', 'jaspi-astra' ) . '</p></div>';
+	}
+
+	$forms_options = array();
+
+	if ( class_exists( 'Forminator_API' ) && method_exists( 'Forminator_API', 'get_forms' ) ) {
+		$forms = Forminator_API::get_forms();
+		if ( is_array( $forms ) ) {
+			foreach ( $forms as $f ) {
+				$id = 0;
+				$title = '';
+				if ( is_object( $f ) ) {
+					if ( isset( $f->id ) ) {
+						$id = $f->id;
+					}
+					if ( isset( $f->form_id ) ) {
+						$id = $f->form_id;
+					}
+					if ( isset( $f->ID ) ) {
+						$id = $f->ID;
+					}
+					if ( isset( $f->title ) ) {
+						$title = $f->title;
+					}
+					if ( isset( $f->name ) ) {
+						$title = $f->name;
+					}
+				} elseif ( is_array( $f ) ) {
+					if ( isset( $f['id'] ) ) {
+						$id = $f['id'];
+					}
+					if ( isset( $f['form_id'] ) ) {
+						$id = $f['form_id'];
+					}
+					if ( isset( $f['ID'] ) ) {
+						$id = $f['ID'];
+					}
+					if ( isset( $f['title'] ) ) {
+						$title = $f['title'];
+					}
+					if ( isset( $f['name'] ) ) {
+						$title = $f['name'];
+					}
+				}
+
+				if ( $id ) {
+					$forms_options[ $id ] = $title ? $title : sprintf( esc_html__( 'Form %d', 'jaspi-astra' ), $id );
+				}
+			}
+		}
+	} else {
+		// Fallback: try to query possible form post types
+		$posts = get_posts( array( 'post_type' => 'forminator_forms', 'posts_per_page' => -1 ) );
+		if ( ! empty( $posts ) ) {
+			foreach ( $posts as $p ) {
+				$forms_options[ $p->ID ] = $p->post_title;
+			}
+		}
+	}
+
+	$current_form = (int) get_option( 'jaspi_footer_forminator_form_id', 0 );
+	$current_field = (string) get_option( 'jaspi_footer_forminator_field_name', '' );
+
+	?>
+	<div class="wrap">
+		<h1><?php esc_html_e( 'Footer Newsletter (JASPI)', 'jaspi-astra' ); ?></h1>
+		<form method="post">
+			<?php wp_nonce_field( 'jaspi_footer_newsletter_save', 'jaspi_footer_newsletter_nonce' ); ?>
+			<table class="form-table">
+				<tr>
+					<th scope="row"><label for="jaspi_footer_forminator_form_id"><?php esc_html_e( 'Forminator Form', 'jaspi-astra' ); ?></label></th>
+					<td>
+						<select name="jaspi_footer_forminator_form_id" id="jaspi_footer_forminator_form_id">
+							<option value="0"><?php esc_html_e( '&mdash; Selecciona un formulario &mdash;', 'jaspi-astra' ); ?></option>
+							<?php foreach ( $forms_options as $id => $label ) : ?>
+								<option value="<?php echo esc_attr( $id ); ?>" <?php selected( $current_form, $id ); ?>><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description"><?php esc_html_e( 'Selecciona a qué formulario de Forminator se enviará el email desde el footer.', 'jaspi-astra' ); ?></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><label for="jaspi_footer_forminator_field_name"><?php esc_html_e( 'Campo del formulario (field name)', 'jaspi-astra' ); ?></label></th>
+					<td>
+						<select name="jaspi_footer_forminator_field_name" id="jaspi_footer_forminator_field_name" class="regular-text">
+							<?php if ( $current_field ) : ?>
+								<option value="<?php echo esc_attr( $current_field ); ?>" selected><?php echo esc_html( $current_field ); ?></option>
+							<?php else : ?>
+								<option value=""><?php esc_html_e( '&mdash; Selecciona un campo &mdash;', 'jaspi-astra' ); ?></option>
+							<?php endif; ?>
+						</select>
+						<p class="description"><?php esc_html_e( 'Selecciona el campo del formulario que recibirá el correo. Si el listado no aparece, comprueba que Forminator está activo y recarga la página.', 'jaspi-astra' ); ?></p>
+					</td>
+				</tr>
+			</table>
+			<p class="submit">
+				<button type="submit" name="jaspi_footer_newsletter_submit" class="button button-primary"><?php esc_html_e( 'Guardar ajustes', 'jaspi-astra' ); ?></button>
+			</p>
+		</form>
+	</div>
+	<?php
+}
+
+function jaspi_enqueue_footer_subscribe_script() {
+	wp_enqueue_script(
+		'jaspi-footer-subscribe-js',
+		get_stylesheet_directory_uri() . '/assets/js/footer-subscribe.js',
+		array(),
+		CHILD_THEME_JASPI_ASTRA_VERSION,
+		true
+	);
+
+	wp_localize_script( 'jaspi-footer-subscribe-js', 'jaspiFooterSubscribe', array(
+		'ajax_url'   => admin_url( 'admin-ajax.php' ),
+		'nonce'      => wp_create_nonce( 'jaspi_footer_subscribe' ),
+		'form_id'    => (int) get_option( 'jaspi_footer_forminator_form_id', 0 ),
+		'field_name' => (string) get_option( 'jaspi_footer_forminator_field_name', '' ),
+	) );
+}
+add_action( 'wp_enqueue_scripts', 'jaspi_enqueue_footer_subscribe_script', 30 );
+
+/**
+ * Admin scripts for footer newsletter page: fetch fields for selected Forminator form
+ */
+function jaspi_footer_newsletter_admin_scripts( $hook ) {
+	if ( empty( $_GET['page'] ) || 'jaspi-footer-newsletter' !== $_GET['page'] ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'jaspi-footer-newsletter-admin',
+		get_stylesheet_directory_uri() . '/assets/js/footer-newsletter-admin.js',
+		array('jquery'),
+		CHILD_THEME_JASPI_ASTRA_VERSION,
+		true
+	);
+
+	wp_localize_script( 'jaspi-footer-newsletter-admin', 'jaspiFooterNewsletterAdmin', array(
+		'ajax_url' => admin_url( 'admin-ajax.php' ),
+		'nonce'    => wp_create_nonce( 'jaspi_footer_newsletter_fields' ),
+	) );
+}
+add_action( 'admin_enqueue_scripts', 'jaspi_footer_newsletter_admin_scripts' );
+
+/**
+ * AJAX: return fields for a Forminator form
+ */
+function jaspi_get_forminator_fields_ajax() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+	}
+
+	check_ajax_referer( 'jaspi_footer_newsletter_fields', 'nonce' );
+
+	$raw_form_id = isset( $_POST['form_id'] ) ? wp_unslash( $_POST['form_id'] ) : '';
+	if ( '' === $raw_form_id ) {
+		wp_send_json_error( array( 'message' => 'Missing form id' ), 400 );
+	}
+
+	$fields = array();
+
+	if ( class_exists( 'Forminator_API' ) ) {
+		// Try to resolve the form by numeric id or by name/slug/title
+		$form = null;
+		$all_forms = array();
+
+		if ( method_exists( 'Forminator_API', 'get_forms' ) ) {
+			$all_forms = Forminator_API::get_forms();
+		}
+
+		// If the posted value is numeric, prefer fetching by id
+		if ( is_numeric( $raw_form_id ) ) {
+			$form_id = absint( $raw_form_id );
+			if ( $form_id ) {
+				if ( method_exists( 'Forminator_API', 'get_form' ) ) {
+					$form = Forminator_API::get_form( $form_id );
+				} elseif ( method_exists( 'Forminator_API', 'get_form_by_id' ) ) {
+					$form = Forminator_API::get_form_by_id( $form_id );
+				}
+			}
+		}
+
+		// If not found yet, try to match by name/title/slug in the forms list
+		if ( null === $form && ! empty( $all_forms ) && is_array( $all_forms ) ) {
+			$needle = (string) $raw_form_id;
+			foreach ( $all_forms as $f ) {
+				$arr = (array) $f;
+				$id = isset( $arr['id'] ) ? $arr['id'] : ( isset( $arr['form_id'] ) ? $arr['form_id'] : ( isset( $arr['ID'] ) ? $arr['ID'] : '' ) );
+				$name = isset( $arr['name'] ) ? $arr['name'] : ( isset( $arr['slug'] ) ? $arr['slug'] : '' );
+				$title = isset( $arr['title'] ) ? $arr['title'] : ( isset( $arr['label'] ) ? $arr['label'] : '' );
+
+				if ( (string) $id === $needle || (string) $name === $needle || (string) $title === $needle ) {
+					$form = $f;
+					break;
+				}
+			}
+		}
+
+		// robust recursive extractor to find form fields in different Forminator structures
+		$collected = array();
+
+		$collect_fields = function ( $node ) use ( & $collect_fields, & $collected ) {
+			if ( is_object( $node ) ) {
+				$node = (array) $node;
+			}
+
+			if ( is_array( $node ) ) {
+				// If associative array where keys look like field names and values contain label/key
+				$all_keys_are_field_like = true;
+				foreach ( $node as $k => $v ) {
+					if ( ! is_string( $k ) ) {
+						$all_keys_are_field_like = false;
+						break;
+					}
+				}
+
+				// Check for direct map: 'email-1' => array('label'=>...)
+				if ( $all_keys_are_field_like ) {
+					foreach ( $node as $k => $v ) {
+						if ( is_array( $v ) || is_object( $v ) ) {
+							$arr = (array) $v;
+							if ( isset( $arr['label'] ) || isset( $arr['name'] ) || isset( $arr['type'] ) ) {
+								$name = isset( $arr['name'] ) ? $arr['name'] : $k;
+								$label = isset( $arr['label'] ) ? $arr['label'] : ( isset( $arr['title'] ) ? $arr['title'] : $k );
+								$collected[ $name ] = array( 'name' => $name, 'label' => $label );
+								continue;
+							}
+						}
+					}
+				}
+
+				// If numeric array of items, check each
+				$is_numeric_indexed = array_keys( $node ) === range( 0, count( $node ) - 1 );
+				if ( $is_numeric_indexed ) {
+					foreach ( $node as $item ) {
+						if ( is_array( $item ) || is_object( $item ) ) {
+							$arr = (array) $item;
+							// common Forminator field shapes: have 'name' and 'label' or 'element' keys
+							if ( isset( $arr['name'] ) || isset( $arr['element'] ) || isset( $arr['slug'] ) || isset( $arr['key'] ) ) {
+								$name = isset( $arr['name'] ) ? $arr['name'] : ( isset( $arr['key'] ) ? $arr['key'] : ( isset( $arr['slug'] ) ? $arr['slug'] : ( isset( $arr['element'] ) ? $arr['element'] : '' ) ) );
+								$label = isset( $arr['label'] ) ? $arr['label'] : ( isset( $arr['title'] ) ? $arr['title'] : $name );
+								if ( $name ) {
+									$collected[ $name ] = array( 'name' => $name, 'label' => $label );
+									continue;
+								}
+							}
+						}
+
+						// recurse deeper
+						$collect_fields( $item );
+					}
+				} else {
+					// associative array: recurse into values
+					foreach ( $node as $v ) {
+						$collect_fields( $v );
+					}
+				}
+			}
+		};
+
+		if ( $form ) {
+			$collect_fields( $form );
+		}
+
+		// fallback: scan postmeta values for serialized structures that may contain fields
+		if ( empty( $collected ) ) {
+			$post = get_post( $form_id );
+			if ( $post ) {
+				$all_meta = get_post_meta( $form_id );
+				foreach ( $all_meta as $meta_val ) {
+					$maybe = maybe_unserialize( $meta_val[0] );
+					$collect_fields( $maybe );
+					if ( ! empty( $collected ) ) break;
+				}
+			}
+		}
+
+		// normalize output
+		if ( ! empty( $collected ) ) {
+			foreach ( $collected as $f ) {
+				if ( isset( $f['name'] ) && $f['name'] ) {
+					$fields[] = array( 'name' => $f['name'], 'label' => isset( $f['label'] ) ? $f['label'] : $f['name'] );
+				}
+			}
+		}
+
+		// fallback: try to read post meta structure
+		if ( empty( $fields ) ) {
+			$post = get_post( $form_id );
+			if ( $post ) {
+				$meta = get_post_meta( $form_id );
+				foreach ( $meta as $value ) {
+					$r = $extract( maybe_unserialize( $value[0] ) );
+					if ( ! empty( $r ) ) {
+						$fields = $r;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if ( empty( $fields ) ) {
+		wp_send_json_error( array( 'message' => 'No fields found' ), 404 );
+	}
+
+	// normalize: ensure name and label present
+	$out = array();
+	foreach ( $fields as $f ) {
+		$out[] = array( 'name' => isset( $f['name'] ) ? $f['name'] : '', 'label' => isset( $f['label'] ) ? $f['label'] : $f['name'] );
+	}
+
+	wp_send_json_success( array( 'fields' => $out ) );
+}
+add_action( 'wp_ajax_jaspi_get_forminator_fields', 'jaspi_get_forminator_fields_ajax' );
+
+function jaspi_footer_subscribe_ajax() {
+	check_ajax_referer( 'jaspi_footer_subscribe', 'nonce' );
+
+	$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+	if ( ! is_email( $email ) ) {
+		wp_send_json_error( array( 'message' => __( 'Correo inválido', 'jaspi-astra' ) ), 400 );
+	}
+
+	$form_id = (int) get_option( 'jaspi_footer_forminator_form_id', 0 );
+	$field_name = (string) get_option( 'jaspi_footer_forminator_field_name', '' );
+
+	if ( ! $form_id || empty( $field_name ) ) {
+		wp_send_json_error( array( 'message' => __( 'Formulario no configurado', 'jaspi-astra' ) ), 400 );
+	}
+
+	if ( ! class_exists( 'Forminator_API' ) || ! method_exists( 'Forminator_API', 'add_form_entry' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Forminator no disponible', 'jaspi-astra' ) ), 500 );
+	}
+
+	$entry_meta = array(
+		array(
+			'name'  => $field_name,
+			'value' => $email,
+		),
+	);
+
+	$entry_id = Forminator_API::add_form_entry( $form_id, $entry_meta );
+
+	if ( $entry_id ) {
+		wp_send_json_success( array( 'message' => __( '¡Gracias por suscribirte!', 'jaspi-astra' ) ) );
+	}
+
+	wp_send_json_error( array( 'message' => __( 'No se pudo enviar la suscripción', 'jaspi-astra' ) ), 500 );
+}
+add_action( 'wp_ajax_jaspi_footer_subscribe', 'jaspi_footer_subscribe_ajax' );
+add_action( 'wp_ajax_nopriv_jaspi_footer_subscribe', 'jaspi_footer_subscribe_ajax' );

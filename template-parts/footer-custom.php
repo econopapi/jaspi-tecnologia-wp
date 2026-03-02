@@ -77,11 +77,12 @@ $has_footer_legal_menu    = ! empty( $args['has_footer_legal_menu'] );
 		</div>
 
 		<div class="jaspi-footer-container jaspi-footer-subscribe-row">
-			<form class="jaspi-footer-subscribe-form" action="#" method="post">
+			<form class="jaspi-footer-subscribe-form" action="#" method="post" data-forminator-form-id="<?php echo esc_attr( get_option( 'jaspi_footer_forminator_form_id' ) ); ?>" data-field-name="<?php echo esc_attr( get_option( 'jaspi_footer_forminator_field_name' ) ); ?>">
 				<label class="screen-reader-text" for="jaspi-footer-subscribe-email"><?php esc_html_e( 'Correo electrónico', 'jaspi-astra' ); ?></label>
 				<input id="jaspi-footer-subscribe-email" type="email" name="email" placeholder="<?php esc_attr_e( 'Ingresa tu correo electrónico', 'jaspi-astra' ); ?>" />
 				<button type="submit"><?php esc_html_e( 'Suscríbete', 'jaspi-astra' ); ?></button>
 			</form>
+			<div id="jaspi-footer-subscribe-message" class="jaspi-footer-subscribe-message" aria-live="polite"></div>
 		</div>
 
 		<div class="jaspi-footer-container jaspi-footer-bottom-row">
