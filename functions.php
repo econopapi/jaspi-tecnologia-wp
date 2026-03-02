@@ -1486,28 +1486,53 @@ function jaspi_get_forminator_fields_ajax() {
 			}
 		};
 
-		if ( $form ) {
-			$collect_fields( $form );
+		// If Forminator provides a dedicated method to get fields, prefer it (simpler and reliable)
+		$resolved_id = isset( $form_id ) ? $form_id : 0;
+		if ( empty( $resolved_id ) && isset( $form ) ) {
+			// try to extract id from resolved form object/array
+			$arrf = (array) $form;
+			$resolved_id = isset( $arrf['id'] ) ? absint( $arrf['id'] ) : ( isset( $arrf['form_id'] ) ? absint( $arrf['form_id'] ) : 0 );
 		}
 
-		// fallback: scan postmeta values for serialized structures that may contain fields
-		if ( empty( $collected ) ) {
-			$post = get_post( $form_id );
-			if ( $post ) {
-				$all_meta = get_post_meta( $form_id );
-				foreach ( $all_meta as $meta_val ) {
-					$maybe = maybe_unserialize( $meta_val[0] );
-					$collect_fields( $maybe );
-					if ( ! empty( $collected ) ) break;
+		if ( $resolved_id && class_exists( 'Forminator_API' ) && method_exists( 'Forminator_API', 'get_form_fields' ) ) {
+			$raw_fields = Forminator_API::get_form_fields( $resolved_id );
+			if ( ! is_wp_error( $raw_fields ) && is_array( $raw_fields ) ) {
+				foreach ( $raw_fields as $rf ) {
+					$r = (array) $rf;
+					$name = isset( $r['name'] ) ? $r['name'] : ( isset( $r['element'] ) ? $r['element'] : ( isset( $r['slug'] ) ? $r['slug'] : '' ) );
+					$label = isset( $r['label'] ) ? $r['label'] : ( isset( $r['title'] ) ? $r['title'] : ( isset( $r['element_label'] ) ? $r['element_label'] : $name ) );
+					if ( $name ) {
+						$fields[] = array( 'name' => $name, 'label' => $label );
+					}
 				}
 			}
 		}
 
-		// normalize output
-		if ( ! empty( $collected ) ) {
-			foreach ( $collected as $f ) {
-				if ( isset( $f['name'] ) && $f['name'] ) {
-					$fields[] = array( 'name' => $f['name'], 'label' => isset( $f['label'] ) ? $f['label'] : $f['name'] );
+		// fallback: use recursive collector if get_form_fields didn't yield results
+		if ( empty( $fields ) ) {
+			if ( $form ) {
+				$collect_fields( $form );
+			}
+
+			// scan postmeta values for serialized structures that may contain fields
+			if ( empty( $collected ) ) {
+				$post = get_post( $form_id );
+				if ( $post ) {
+					$all_meta = get_post_meta( $form_id );
+					foreach ( $all_meta as $meta_val ) {
+						$maybe = maybe_unserialize( $meta_val[0] );
+						$collect_fields( $maybe );
+						if ( ! empty( $collected ) ) break;
+					}
+				}
+			}
+
+			// normalize output
+			if ( ! empty( $collected ) ) {
+				foreach ( $collected as $f ) {
+					if ( isset( $f['name'] ) && $f['name'] ) {
+						$fields[] = array( 'name' => $f['name'], 'label' => isset( $f['label'] ) ? $f['label'] : $f['name'] );
+					}
 				}
 			}
 		}
