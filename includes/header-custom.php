@@ -91,7 +91,6 @@ function jaspi_get_flat_icon( $icon ) {
 function jaspi_render_action_link( $href, $label, $icon, $class_name = '' ) {
 	$icon_markup = jaspi_get_flat_icon( $icon );
 	$class_attr  = $class_name ? ' class="' . esc_attr( $class_name ) . '"' : '';
-
 	echo '<a href="' . esc_url( $href ) . '"' . $class_attr . '>';
 	echo '<span class="jaspi-action-icon" aria-hidden="true">' . wp_kses(
 		$icon_markup,
@@ -118,6 +117,18 @@ function jaspi_render_action_link( $href, $label, $icon, $class_name = '' ) {
 			),
 		)
 	) . '</span>';
+
+	// If this is the favorites action, print a counter bubble that can be updated by JS
+	if ( 'favorites' === $icon ) {
+		$count = function_exists( 'jaspi_get_favorites_count' ) ? jaspi_get_favorites_count() : 0;
+		if ( $count > 0 ) {
+			echo '<span class="jaspi-action-count" id="jaspi-fav-count">' . esc_html( $count ) . '</span>';
+		} else {
+			// render hidden placeholder so JS can reveal when >0
+			echo '<span class="jaspi-action-count" id="jaspi-fav-count" style="display:none"></span>';
+		}
+	}
+
 	echo '<span class="jaspi-action-label">' . esc_html( $label ) . '</span>';
 	echo '</a>';
 }

@@ -630,6 +630,239 @@ add_action('init', 'jaspi_register_featured_brands_block');
 /**
  * Render JASPI Featured Brands Block
  */
+
+/**
+ * FAVORITES / WISHLIST BASIC IMPLEMENTATION
+ * Stores favorites in usermeta for logged-in users and in a cookie for guests.
+ */
+
+function jaspi_get_favorites_from_cookie() {
+	if ( empty( $_COOKIE['jaspi_favs'] ) ) {
+		return array();
+	}
+	$data = json_decode( wp_unslash( $_COOKIE['jaspi_favs'] ), true );
+	if ( ! is_array( $data ) ) {
+		return array();
+	}
+	return array_map( 'intval', $data );
+}
+
+function jaspi_get_user_favorites() {
+	if ( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+		$meta = get_user_meta( $user_id, 'jaspi_favorites', true );
+		if ( ! is_array( $meta ) ) {
+			$meta = array();
+		}
+		return array_map( 'intval', $meta );
+	}
+
+	return jaspi_get_favorites_from_cookie();
+}
+
+function jaspi_set_user_favorites( $favorites ) {
+	if ( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+		update_user_meta( $user_id, 'jaspi_favorites', array_map( 'intval', $favorites ) );
+	}
+}
+
+function jaspi_get_favorites_count() {
+	$favs = jaspi_get_user_favorites();
+	return is_array( $favs ) ? count( $favs ) : 0;
+}
+
+function jaspi_enqueue_favorites_assets() {
+	wp_enqueue_script(
+		'jaspi-favorites-js',
+		get_stylesheet_directory_uri() . '/assets/js/favorites.js',
+		array('jquery'),
+		CHILD_THEME_JASPI_ASTRA_VERSION,
+		true
+	);
+
+	wp_localize_script('jaspi-favorites-js', 'jaspi_favs', array(
+		'ajax_url' => admin_url('admin-ajax.php'),
+		'nonce'    => wp_create_nonce('jaspi_favs_nonce'),
+		'count'    => jaspi_get_favorites_count(),
+		'favorites' => jaspi_get_user_favorites(),
+		'favorites_page' => esc_url( home_url( '/favoritos' ) ),
+	));
+
+	wp_enqueue_style(
+		'jaspi-favorites-css',
+		get_stylesheet_directory_uri() . '/assets/css/favorites.css',
+		array(),
+		CHILD_THEME_JASPI_ASTRA_VERSION
+	);
+}
+add_action( 'wp_enqueue_scripts', 'jaspi_enqueue_favorites_assets', 25 );
+
+/**
+ * Merge favorites from cookie into usermeta when a user logs in.
+ * This keeps guest favorites when the user authenticates.
+ */
+function jaspi_merge_cookie_to_usermeta_on_login( $user_login, $user ) {
+	if ( empty( $_COOKIE['jaspi_favs'] ) ) {
+		return;
+	}
+
+	$cookie = json_decode( wp_unslash( $_COOKIE['jaspi_favs'] ), true );
+	if ( ! is_array( $cookie ) ) {
+		return;
+	}
+
+	$cookie = array_map( 'intval', $cookie );
+	$user_id = is_object( $user ) && isset( $user->ID ) ? (int) $user->ID : 0;
+	if ( ! $user_id ) {
+		return;
+	}
+
+	$existing = get_user_meta( $user_id, 'jaspi_favorites', true );
+	if ( ! is_array( $existing ) ) {
+		$existing = array();
+	}
+
+	$merged = array_values( array_unique( array_merge( $existing, $cookie ) ) );
+	update_user_meta( $user_id, 'jaspi_favorites', $merged );
+
+	// Clear cookie
+	setcookie( 'jaspi_favs', '', time() - HOUR_IN_SECONDS, '/' );
+	// also unset in PHP global for immediate requests
+	unset( $_COOKIE['jaspi_favs'] );
+}
+add_action( 'wp_login', 'jaspi_merge_cookie_to_usermeta_on_login', 10, 2 );
+
+function jaspi_toggle_favorite_ajax() {
+	check_ajax_referer( 'jaspi_favs_nonce', 'nonce' );
+
+	$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+	if ( ! $product_id ) {
+		wp_send_json_error( array( 'message' => 'Producto inválido' ), 400 );
+	}
+
+	$favorites = jaspi_get_user_favorites();
+	if ( in_array( $product_id, $favorites, true ) ) {
+		// remove
+		$favorites = array_values( array_diff( $favorites, array( $product_id ) ) );
+		$action = 'removed';
+	} else {
+		// add
+		$favorites[] = $product_id;
+		$favorites = array_values( array_unique( $favorites ) );
+		$action = 'added';
+	}
+
+	// Persist for logged in users
+	if ( is_user_logged_in() ) {
+		jaspi_set_user_favorites( $favorites );
+	}
+
+	// Return updated favorites (client will set cookie for guests)
+	wp_send_json_success( array( 'favorites' => $favorites, 'count' => count( $favorites ), 'action' => $action ) );
+}
+add_action( 'wp_ajax_jaspi_toggle_favorite', 'jaspi_toggle_favorite_ajax' );
+add_action( 'wp_ajax_nopriv_jaspi_toggle_favorite', 'jaspi_toggle_favorite_ajax' );
+
+function jaspi_get_favorites_ajax() {
+	$favs = jaspi_get_user_favorites();
+	wp_send_json_success( array( 'favorites' => $favs, 'count' => count( $favs ) ) );
+}
+add_action( 'wp_ajax_jaspi_get_favorites', 'jaspi_get_favorites_ajax' );
+add_action( 'wp_ajax_nopriv_jaspi_get_favorites', 'jaspi_get_favorites_ajax' );
+
+function jaspi_clear_favorites_ajax() {
+	check_ajax_referer( 'jaspi_favs_nonce', 'nonce' );
+
+	// Clear server-side for logged users
+	if ( is_user_logged_in() ) {
+		$user_id = get_current_user_id();
+		update_user_meta( $user_id, 'jaspi_favorites', array() );
+	}
+
+	// Clear cookie for guests and in any case for client
+	setcookie( 'jaspi_favs', '', time() - HOUR_IN_SECONDS, '/' );
+	if ( isset( $_COOKIE['jaspi_favs'] ) ) {
+		unset( $_COOKIE['jaspi_favs'] );
+	}
+
+	wp_send_json_success( array( 'favorites' => array(), 'count' => 0 ) );
+}
+add_action( 'wp_ajax_jaspi_clear_favorites', 'jaspi_clear_favorites_ajax' );
+add_action( 'wp_ajax_nopriv_jaspi_clear_favorites', 'jaspi_clear_favorites_ajax' );
+
+function jaspi_render_fav_button( $position = '' ) {
+	global $product;
+	if ( ! $product ) {
+		return;
+	}
+	$product_id = $product->get_id();
+	$favorites = jaspi_get_user_favorites();
+	$is_fav = in_array( $product_id, $favorites, true );
+
+	$icon = '<span class="jaspi-fav-heart" aria-hidden="true">♥</span>';
+	$btn_class = 'jaspi-fav-btn' . ( $is_fav ? ' is-fav' : '' );
+	printf(
+		'<button type="button" class="%1$s" data-product-id="%2$d" aria-pressed="%4$s">%3$s <span class="screen-reader-text">%5$s</span></button>',
+		esc_attr( $btn_class ),
+		esc_attr( $product_id ),
+		$icon,
+		$is_fav ? 'true' : 'false',
+		$is_fav ? esc_html__( 'Eliminar de favoritos', 'jaspi-astra' ) : esc_html__( 'Añadir a favoritos', 'jaspi-astra' )
+	);
+}
+
+add_action( 'woocommerce_after_shop_loop_item', 'jaspi_render_fav_button', 20 );
+add_action( 'woocommerce_single_product_summary', 'jaspi_render_fav_button', 35 );
+
+function jaspi_favorites_shortcode( $atts ) {
+	$favorites = jaspi_get_user_favorites();
+	if ( empty( $favorites ) ) {
+		return '<p>' . esc_html__( 'No tienes favoritos aún.', 'jaspi-astra' ) . '</p>';
+	}
+
+	ob_start();
+	?>
+	<div class="jaspi-favorites-list">
+		<div class="jaspi-favorites-actions" style="margin-bottom:12px;">
+			<button type="button" class="button jaspi-clear-favs"><?php esc_html_e( 'Vaciar lista', 'jaspi-astra' ); ?></button>
+		</div>
+		<table class="jaspi-favorites-table">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Producto', 'jaspi-astra' ); ?></th>
+					<th><?php esc_html_e( 'Precio', 'jaspi-astra' ); ?></th>
+					<th><?php esc_html_e( 'Estado Inventario', 'jaspi-astra' ); ?></th>
+					<th><?php esc_html_e( 'Acciones', 'jaspi-astra' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $favorites as $prod_id ):
+					$prod = wc_get_product( $prod_id );
+					if ( ! $prod ) {
+						continue;
+					}
+					?>
+					<tr>
+						<td class="jaspi-fav-product">
+							<button class="jaspi-remove-fav" data-product-id="<?php echo esc_attr( $prod_id ); ?>">✕</button>
+							<a href="<?php echo esc_url( get_permalink( $prod_id ) ); ?>"><?php echo wp_kses_post( $prod->get_image( 'thumbnail' ) ); ?> <span class="jaspi-fav-title"><?php echo esc_html( $prod->get_name() ); ?></span></a>
+						</td>
+						<td class="jaspi-fav-price"><?php echo wp_kses_post( $prod->get_price_html() ); ?></td>
+						<td class="jaspi-fav-stock"><?php echo $prod->is_in_stock() ? '<span class="in-stock">' . esc_html__( 'En stock', 'jaspi-astra' ) . '</span>' : '<span class="out-of-stock">' . esc_html__( 'Agotado', 'jaspi-astra' ) . '</span>'; ?></td>
+						<td class="jaspi-fav-actions">
+							<a class="button" href="<?php echo esc_url( get_permalink( $prod_id ) ); ?>"><?php esc_html_e( 'Mostrar', 'jaspi-astra' ); ?></a>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+	<?php
+	return ob_get_clean();
+}
+add_shortcode( 'jaspi_favorites', 'jaspi_favorites_shortcode' );
+
 function jaspi_render_featured_brands_block($attributes) {
 	$selected_brands = isset($attributes['selectedBrands']) ? $attributes['selectedBrands']:array();
 	$title = isset($attributes['title'])? $attributes['title']: 'Marcas Destacadas';
