@@ -8,6 +8,7 @@
     color: var(--jaspi-background-black);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     font-family: var(--jaspi-font-body);
+    padding-top: var(--jaspi-topbar-height, 38px);
 }
 
 .jaspi-categories-button,
@@ -40,8 +41,11 @@
     background: var(--jaspi-background-black);
     color: var(--jaspi-background-white);
     font-size: 0.8rem;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
     z-index: 220;
 }
 

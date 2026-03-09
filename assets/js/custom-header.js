@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+	const topbar = document.querySelector('.jaspi-header-topbar');
 	const categoriesButton = document.querySelector('.jaspi-categories-button');
 	const categoriesDropdown = document.getElementById('jaspi-categories-dropdown');
 	const categoriesTrigger = document.querySelector('.jaspi-categories-trigger');
@@ -7,6 +8,21 @@ document.addEventListener('DOMContentLoaded', function () {
 	const mobileClose = document.querySelector('.jaspi-mobile-close');
 	const tabs = document.querySelectorAll('.jaspi-mobile-tab');
 	const tabContents = document.querySelectorAll('.jaspi-mobile-tab-content');
+
+	if (topbar) {
+		const setTopbarHeight = function () {
+			document.documentElement.style.setProperty('--jaspi-topbar-height', topbar.offsetHeight + 'px');
+		};
+
+		setTopbarHeight();
+		window.addEventListener('load', setTopbarHeight);
+		window.addEventListener('resize', setTopbarHeight);
+
+		if (window.ResizeObserver) {
+			const topbarObserver = new window.ResizeObserver(setTopbarHeight);
+			topbarObserver.observe(topbar);
+		}
+	}
 
 	if (categoriesButton && categoriesDropdown && categoriesTrigger) {
 		let categoriesCloseTimer = null;
