@@ -359,6 +359,14 @@
 }
 
 @media (max-width: 768px) {
+    .jaspi-header--no-mobile-topbar {
+        padding-top: 0;
+    }
+
+    .jaspi-header-topbar--mobile-hidden {
+        display: none;
+    }
+
     .jaspi-header-topbar .jaspi-header-container {
         flex-wrap: wrap;
         padding-top: 0.45rem;
