@@ -40,6 +40,13 @@
     background: var(--jaspi-background-black);
     color: var(--jaspi-background-white);
     font-size: 0.8rem;
+    position: sticky;
+    top: 0;
+    z-index: 220;
+}
+
+.admin-bar .jaspi-header-topbar {
+    top: 32px;
 }
 
 .jaspi-header-topbar .jaspi-header-container {
@@ -55,10 +62,40 @@
     white-space: nowrap;
 }
 
+.jaspi-header-topbar-center {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+.jaspi-header-topbar-highlight {
+    /* display: inline-block; */
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--jaspi-background-white);
+    text-decoration: none;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.jaspi-header-topbar-highlight:hover {
+    color: var(--jaspi-primary);
+}
+
 .jaspi-header-topbar-right {
     display: flex;
     align-items: center;
     gap: 1rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.jaspi-header-topbar-center[hidden] {
+    display: block;
+    visibility: hidden;
 }
 
 .jaspi-header-topbar-right a {
@@ -311,6 +348,37 @@
     display: none;
 }
 
+@media (max-width: 782px) {
+    .admin-bar .jaspi-header-topbar {
+        top: 46px;
+    }
+}
+
+@media (max-width: 768px) {
+    .jaspi-header-topbar .jaspi-header-container {
+        flex-wrap: wrap;
+        padding-top: 0.45rem;
+        padding-bottom: 0.45rem;
+    }
+
+    .jaspi-header-topbar-left,
+    .jaspi-header-topbar-center,
+    .jaspi-header-topbar-right {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .jaspi-header-topbar-left {
+        white-space: normal;
+    }
+
+    .jaspi-header-topbar-center[hidden] {
+        display: none;
+    }
+}
+
 .jaspi-mobile-panel {
     position: fixed;
     inset: 0;
@@ -437,6 +505,7 @@ body.jaspi-mobile-open {
     }
 
     .jaspi-header-topbar-left,
+    .jaspi-header-topbar-right,
     .jaspi-header-topbar-right a:nth-child(2),
     .jaspi-header-topbar-right a:nth-child(3) {
         display: none;

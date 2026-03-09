@@ -7,17 +7,27 @@
 
 $has_categories_menu = ! empty( $args['has_categories_menu'] );
 $has_quick_links     = ! empty( $args['has_quick_links'] );
+$topbar_settings     = jaspi_get_topbar_settings();
+$topbar_highlight    = jaspi_get_topbar_highlight( $topbar_settings );
+$topbar_links        = jaspi_get_topbar_links( $topbar_settings );
 // Etiquetas dinámicas según estado de sesión
 $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) : __( 'Iniciar sesión', 'jaspi-astra' );
-$account_label_topbar = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) : __( 'Iniciar sesión / Registrarse', 'jaspi-astra' );
 ?>
 <header class="jaspi-header" role="banner">
 	<div class="jaspi-header-topbar">
 		<div class="jaspi-header-container">
-			<p class="jaspi-header-topbar-left"><?php esc_html_e( '¡Bienvenido a JASPI Tecnología!', 'jaspi-astra' ); ?></p>
+			<p class="jaspi-header-topbar-left"><?php echo esc_html( $topbar_settings['welcome_text'] ); ?></p>
+			<div class="jaspi-header-topbar-center"<?php echo empty( $topbar_highlight ) ? ' hidden' : ''; ?>>
+				<?php if ( ! empty( $topbar_highlight['url'] ) ) : ?>
+					<a class="jaspi-header-topbar-highlight" href="<?php echo esc_url( $topbar_highlight['url'] ); ?>"><?php echo esc_html( $topbar_highlight['text'] ); ?></a>
+				<?php elseif ( ! empty( $topbar_highlight['text'] ) ) : ?>
+					<span class="jaspi-header-topbar-highlight"><?php echo esc_html( $topbar_highlight['text'] ); ?></span>
+				<?php endif; ?>
+			</div>
 			<div class="jaspi-header-topbar-right">
-				<a href="/contacto"><?php esc_html_e( 'Contáctenos', 'jaspi-astra' ); ?></a>
-				<a href="/mi-cuenta"><?php echo esc_html( $account_label_topbar ); ?></a>
+				<?php foreach ( $topbar_links as $topbar_link ) : ?>
+					<a href="<?php echo esc_url( $topbar_link['url'] ); ?>"><?php echo esc_html( $topbar_link['label'] ); ?></a>
+				<?php endforeach; ?>
 			</div>
 		</div>
 	</div>
