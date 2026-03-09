@@ -10,11 +10,13 @@ $has_quick_links     = ! empty( $args['has_quick_links'] );
 $topbar_settings     = jaspi_get_topbar_settings();
 $topbar_highlight    = jaspi_get_topbar_highlight( $topbar_settings );
 $topbar_links        = jaspi_get_topbar_links( $topbar_settings );
+$header_classes      = empty( $topbar_highlight ) ? 'jaspi-header jaspi-header--no-mobile-topbar' : 'jaspi-header';
+$topbar_classes      = empty( $topbar_highlight ) ? 'jaspi-header-topbar jaspi-header-topbar--mobile-hidden' : 'jaspi-header-topbar';
 // Etiquetas dinámicas según estado de sesión
 $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) : __( 'Iniciar sesión', 'jaspi-astra' );
 ?>
-<header class="jaspi-header" role="banner">
-	<div class="jaspi-header-topbar">
+<header class="<?php echo esc_attr( $header_classes ); ?>" role="banner">
+	<div class="<?php echo esc_attr( $topbar_classes ); ?>">
 		<div class="jaspi-header-container">
 			<p class="jaspi-header-topbar-left"><?php echo esc_html( $topbar_settings['welcome_text'] ); ?></p>
 			<div class="jaspi-header-topbar-center"<?php echo empty( $topbar_highlight ) ? ' hidden' : ''; ?>>
