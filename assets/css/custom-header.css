@@ -297,11 +297,16 @@
     gap: 0.3rem;
 }
 
-.jaspi-quick-links-list li {
+.jaspi-quick-links {
+    position: relative;
+    height: 100%;
+}
+
+.jaspi-quick-links-list > li {
     flex: 1;
 }
 
-.jaspi-quick-links-list li a {
+.jaspi-quick-links-list > li > a {
     min-height: 88px;
     display: flex;
     align-items: center;
@@ -318,11 +323,11 @@
     transition: background-color 0.24s ease, color 0.24s ease, transform 0.24s ease;
 }
 
-.jaspi-quick-links-list li:first-child a {
+.jaspi-quick-links-list > li:first-child > a {
     border-left: 0;
 }
 
-.jaspi-quick-links-list li a::after {
+.jaspi-quick-links-list > li > a::after {
     content: '';
     position: absolute;
     left: 18%;
@@ -336,16 +341,84 @@
     opacity: 0.95;
 }
 
-.jaspi-quick-links-list li a:hover,
-.jaspi-quick-links-list li a:focus-visible {
+.jaspi-quick-links-list > li > a:hover,
+.jaspi-quick-links-list > li > a:focus-visible {
     background: color-mix(in srgb, var(--jaspi-background-white) 18%, var(--jaspi-primary));
     color: var(--jaspi-background-white);
     transform: translateY(-1px);
 }
 
-.jaspi-quick-links-list li a:hover::after,
-.jaspi-quick-links-list li a:focus-visible::after {
+.jaspi-quick-links-list > li > a:hover::after,
+.jaspi-quick-links-list > li > a:focus-visible::after {
     transform: scaleX(1);
+}
+
+.jaspi-quick-links-list .sub-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.jaspi-quick-links-list > li > .sub-menu {
+    position: absolute;
+    top: calc(100% - 1px);
+    left: 0;
+    width: min(920px, calc(100vw - 2.2rem));
+    background: var(--jaspi-background-white);
+    color: var(--jaspi-background-black);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.16);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.65rem 2.25rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(10px) scale(0.98);
+    transform-origin: top left;
+    transition: opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease;
+    z-index: 160;
+}
+
+.jaspi-quick-links-list > li:hover > .sub-menu,
+.jaspi-quick-links-list > li:focus-within > .sub-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.jaspi-quick-links-list > li > .sub-menu > li > a {
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+    font-family: var(--jaspi-font-title);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.25;
+    font-size: 1.1rem;
+    margin: 0 0 0.9rem;
+}
+
+.jaspi-quick-links-list > li > .sub-menu > li > .sub-menu {
+    display: grid;
+    gap: 0.62rem;
+}
+
+.jaspi-quick-links-list > li > .sub-menu > li > .sub-menu > li > a {
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    font-weight: 600;
+}
+
+.jaspi-quick-links-list > li > .sub-menu > li > a:hover,
+.jaspi-quick-links-list > li > .sub-menu > li > a:focus-visible,
+.jaspi-quick-links-list > li > .sub-menu > li > .sub-menu > li > a:hover,
+.jaspi-quick-links-list > li > .sub-menu > li > .sub-menu > li > a:focus-visible {
+    color: var(--jaspi-primary);
 }
 
 .jaspi-header-mobile {
@@ -471,6 +544,32 @@
     font-weight: 600;
 }
 
+.jaspi-mobile-list .sub-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 1rem;
+}
+
+.jaspi-mobile-list > li > .sub-menu > li > a {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    font-size: 1rem;
+    font-family: var(--jaspi-font-title);
+    text-transform: uppercase;
+}
+
+.jaspi-mobile-list > li > .sub-menu > li > .sub-menu {
+    padding-left: 0.75rem;
+}
+
+.jaspi-mobile-list > li > .sub-menu > li > .sub-menu > li > a {
+    padding-top: 0.62rem;
+    padding-bottom: 0.62rem;
+    font-size: 0.95rem;
+    font-family: var(--jaspi-font-body);
+    text-transform: none;
+}
+
 .jaspi-mobile-categories-list li a {
     text-transform: uppercase;
 }
@@ -495,9 +594,23 @@ body.jaspi-mobile-open {
         grid-template-columns: 250px 1fr;
     }
 
-    .jaspi-quick-links-list li a {
+    .jaspi-quick-links-list > li > a {
         font-size: 0.85rem;
         padding: 0 0.5rem;
+    }
+
+    .jaspi-quick-links-list > li > .sub-menu {
+        width: min(820px, calc(100vw - 2rem));
+        padding: 1.7rem;
+        gap: 1.35rem 1.7rem;
+    }
+
+    .jaspi-quick-links-list > li > .sub-menu > li > a {
+        font-size: 1.5rem;
+    }
+
+    .jaspi-quick-links-list > li > .sub-menu > li > .sub-menu > li > a {
+        font-size: 1.35rem;
     }
 }
 
