@@ -87,7 +87,7 @@ $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) :
 								'container'      => false,
 								'menu_class'     => 'jaspi-quick-links-list',
 								'fallback_cb'    => false,
-								'depth'          => 1,
+								'depth'          => 3,
 							)
 						);
 					} else {
@@ -134,7 +134,7 @@ $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) :
 								'container'      => false,
 								'menu_class'     => 'jaspi-mobile-list',
 								'fallback_cb'    => false,
-								'depth'          => 1,
+								'depth'          => 3,
 							)
 						);
 					} else {
