@@ -8,7 +8,6 @@
   var CheckboxControl = components.CheckboxControl;
   var SelectControl = components.SelectControl;
   var ToggleControl = components.ToggleControl;
-  var Button = components.Button;
   var useState = element.useState;
   var useEffect = element.useEffect;
   var useSelect = data.useSelect;
@@ -186,6 +185,15 @@
         }
       }
 
+      function removeSelectedProduct(productId) {
+        var selectedProducts = attributes.selectedProducts || [];
+        setAttributes({
+          selectedProducts: selectedProducts.filter(function(id) {
+            return id !== productId;
+          })
+        });
+      }
+
       function toggleTagSelection(tagId) {
         var selectedTags = attributes.selectedTags || [];
         var index = selectedTags.indexOf(tagId);
@@ -212,6 +220,19 @@
           (product.description && product.description.toLowerCase().includes(term)) ||
           (product.short_description && product.short_description.toLowerCase().includes(term))
         );
+      });
+
+      var selectedProductsData = (attributes.selectedProducts || []).map(function(productId) {
+        var foundProduct = products.find(function(product) {
+          return product.id === productId;
+        });
+
+        return {
+          id: productId,
+          name: foundProduct && foundProduct.name ? foundProduct.name : 'Producto #' + productId,
+          price: foundProduct && foundProduct.price ? foundProduct.price : '',
+          image: foundProduct && foundProduct.images && foundProduct.images[0] ? foundProduct.images[0].src : ''
+        };
       });
 
       // Obtener productos seleccionados para mostrar
@@ -289,39 +310,71 @@
             // Selección manual de productos
             attributes.filterType === 'manual' && el('div', {}, [
               el('h4', {}, 'Seleccionar Productos'),
+              el('div', { className: 'selection-counter' },
+                selectedProductsData.length + ' de ' + attributes.productsToShow + ' seleccionados'
+              ),
               isLoading && el('p', { className: 'loading-hint' }, 'Cargando productos, esto puede tardar unos segundos...'),
-              el(TextControl, {
-                label: 'Buscar productos',
-                value: searchTerm,
-                onChange: setSearchTerm,
-                placeholder: 'Escribe para buscar...',
-                disabled: isLoading
-              }),
-              el('div', { className: 'products-grid' }, 
-                isLoading
-                  ? skeletonItems
-                  : (filteredProducts.length === 0
-                    ? [el('p', { className: 'empty-hint' }, 'No hay productos disponibles. Intenta otra búsqueda.')]
-                    : filteredProducts.map(function(product) {
-                        var isSelected = attributes.selectedProducts.includes(product.id);
-                        return el('div', {
-                          key: product.id,
-                          className: 'product-item ' + (isSelected ? 'selected' : ''),
-                          onClick: function() { toggleProductSelection(product.id); }
-                        }, [
-                          product.images[0] && el('img', {
-                            src: product.images[0].src,
-                            alt: product.name,
-                            style: { width: '50px', height: '50px', objectFit: 'cover' }
-                          }),
-                          el('div', {}, [
+              el('div', { className: 'manual-selection-search' }, [
+                el(TextControl, {
+                  label: 'Buscar productos',
+                  value: searchTerm,
+                  onChange: setSearchTerm,
+                  placeholder: 'Escribe para buscar...',
+                  disabled: isLoading
+                }),
+                el('div', { className: 'products-grid' },
+                  isLoading
+                    ? skeletonItems
+                    : (filteredProducts.length === 0
+                      ? [el('p', { className: 'empty-hint' }, 'No hay productos disponibles. Intenta otra búsqueda.')]
+                      : filteredProducts.map(function(product) {
+                          var isSelected = attributes.selectedProducts.includes(product.id);
+                          return el('div', {
+                            key: product.id,
+                            className: 'product-item ' + (isSelected ? 'selected' : ''),
+                            onClick: function() { toggleProductSelection(product.id); }
+                          }, [
+                            product.images[0] && el('img', {
+                              src: product.images[0].src,
+                              alt: product.name,
+                              style: { width: '50px', height: '50px', objectFit: 'cover' }
+                            }),
+                            el('div', {}, [
+                              el('strong', {}, product.name),
+                              el('div', {}, '$' + product.price)
+                            ])
+                          ]);
+                        })
+                    )
+                )
+              ]),
+              el('div', { className: 'selected-products-sidebar' }, [
+                el('h5', {}, 'Productos seleccionados'),
+                selectedProductsData.length === 0
+                  ? el('p', { className: 'empty-hint' }, 'Aún no hay productos seleccionados.')
+                  : el('ul', { className: 'selected-products-list' },
+                      selectedProductsData.map(function(product) {
+                        return el('li', { key: 'selected-' + product.id, className: 'selected-product-item' }, [
+                          product.image
+                            ? el('img', {
+                                className: 'selected-product-thumb',
+                                src: product.image,
+                                alt: product.name
+                              })
+                            : el('div', { className: 'selected-product-thumb selected-product-thumb--placeholder' }),
+                          el('div', { className: 'selected-product-meta' }, [
                             el('strong', {}, product.name),
-                            el('div', {}, '$' + product.price)
-                          ])
+                            product.price ? el('span', {}, '$' + product.price) : null
+                          ]),
+                          el('button', {
+                            type: 'button',
+                            className: 'remove-selected-product',
+                            onClick: function() { removeSelectedProduct(product.id); }
+                          }, 'Quitar')
                         ]);
                       })
-                  )
-              )
+                    )
+              ])
             ]),
 
             // Selección por etiquetas
