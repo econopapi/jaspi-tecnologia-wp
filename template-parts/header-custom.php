@@ -12,6 +12,7 @@ $topbar_highlight    = jaspi_get_topbar_highlight( $topbar_settings );
 $topbar_links        = jaspi_get_topbar_links( $topbar_settings );
 $header_classes      = empty( $topbar_highlight ) ? 'jaspi-header jaspi-header--no-mobile-topbar' : 'jaspi-header';
 $topbar_classes      = empty( $topbar_highlight ) ? 'jaspi-header-topbar jaspi-header-topbar--mobile-hidden' : 'jaspi-header-topbar';
+$current_search_query = get_search_query();
 // Etiquetas dinámicas según estado de sesión
 $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) : __( 'Iniciar sesión', 'jaspi-astra' );
 ?>
@@ -41,7 +42,7 @@ $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) :
 			</div>
 			<form class="jaspi-header-search" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<label class="screen-reader-text" for="jaspi-header-search-input"><?php esc_html_e( 'Buscar', 'jaspi-astra' ); ?></label>
-				<input id="jaspi-header-search-input" type="search" name="s" placeholder="<?php esc_attr_e( 'Buscar ...', 'jaspi-astra' ); ?>" />
+				<input id="jaspi-header-search-input" type="search" name="s" value="<?php echo esc_attr( $current_search_query ); ?>" placeholder="<?php esc_attr_e( 'Buscar ...', 'jaspi-astra' ); ?>" />
 				<button type="submit" aria-label="<?php esc_attr_e( 'Buscar', 'jaspi-astra' ); ?>">🔍</button>
 			</form>
 				<div class="jaspi-header-actions" aria-label="<?php esc_attr_e( 'Accesos rápidos', 'jaspi-astra' ); ?>">
@@ -112,7 +113,7 @@ $account_label_action = is_user_logged_in() ? __( 'Mi cuenta', 'jaspi-astra' ) :
 		<div class="jaspi-header-container jaspi-mobile-search-row">
 			<form class="jaspi-header-search jaspi-mobile-search" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<label class="screen-reader-text" for="jaspi-mobile-search-input"><?php esc_html_e( 'Buscar', 'jaspi-astra' ); ?></label>
-				<input id="jaspi-mobile-search-input" type="search" name="s" placeholder="<?php esc_attr_e( 'Buscar', 'jaspi-astra' ); ?>" />
+				<input id="jaspi-mobile-search-input" type="search" name="s" value="<?php echo esc_attr( $current_search_query ); ?>" placeholder="<?php esc_attr_e( 'Buscar', 'jaspi-astra' ); ?>" />
 				<button type="submit" aria-label="<?php esc_attr_e( 'Buscar', 'jaspi-astra' ); ?>">🔍</button>
 			</form>
 		</div>
